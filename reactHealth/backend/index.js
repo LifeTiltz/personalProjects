@@ -18,7 +18,7 @@ const conn = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'password',
-    database: 'reddit'
+    database: 'react_tut'
 });
 
 conn.connect((err) => {
@@ -29,8 +29,8 @@ conn.connect((err) => {
     }
 });
 
-app.get("/posts", (req, res) => {
-    conn.query(`Select * from posts`, (err, posts) => {
+app.get("/blogs", (req, res) => {
+    conn.query(`Select * from blogs`, (err, posts) => {
         if (err) {
             res.status(500)
         }
@@ -40,28 +40,31 @@ app.get("/posts", (req, res) => {
     })
 });
 
-app.get(`/posts/:id`, (req, res) => {
+app.get(`/blogs/:id`, (req, res) => {
     const id = req.params.id
-    conn.query(`Select * from posts where id = ?`, [id], (err, posts) => {
+    conn.query(`Select * from blogs where id = ?`, [id], (err, blogs) => {
         if (err) {
             res.status(500)
         }
         else {
-            res.status(200).json(posts)
+            res.status(200).json(blogs)
         }
     })
 });
 
-app.post("/posts", (req, res) => {
-    let title = req.query.title
-    let url = req.query.url
-    conn.query(`INSERT INTO posts (title, url, timestamp) VALUES (?,?, "314159265");`, [title, url], (err, posts) => {
+app.post("/blogs", (req, res) => {
+    let title = req.body.title
+    let body = req.body.body
+    let author = req.body.author
+    console.log(req.body);
+
+    conn.query(`INSERT INTO blogs (title, body, author) VALUES (?,?, ?);`, [title, body, author], (err, blogs) => {
         if (err) {
             res.status(500)
         }
         else {
-            let newPostId = posts.insertId
-            conn.query(`Select * from posts where id = ?`, [newPostId], (err, postback) => {
+            let newPostId = blogs.insertId
+            conn.query(`Select * from blogs where id = ?`, [newPostId], (err, postback) => {
                 if (err) {
                     res.status(500)
                 }
@@ -73,14 +76,27 @@ app.post("/posts", (req, res) => {
     })
 });
 
-app.put(`/posts/:id/upvote`, (req, res) => {
+app.delete("/delete/:id", (req, res) => {
     let id = req.params.id
-    conn.query(`update posts set score = posts.score + 1 where id = ?;`, [id], (err, update) => {
+    console.log(req.params);
+    conn.query('DELETE FROM blogs WHERE id = ?', [id], (err, del) => {
         if (err) {
             res.status(500)
         }
         else {
-            conn.query(`Select * from posts where id = ?`, [id], (err, postback) => {
+            res.status(200)
+        }
+    })
+})
+
+app.put(`/blogs/:id/upvote`, (req, res) => {
+    let id = req.params.id
+    conn.query(`update blogs set score = posts.score + 1 where id = ?;`, [id], (err, update) => {
+        if (err) {
+            res.status(500)
+        }
+        else {
+            conn.query(`Select * from blogs where id = ?`, [id], (err, postback) => {
                 if (err) {
                     res.status(500)
                 }
@@ -92,14 +108,14 @@ app.put(`/posts/:id/upvote`, (req, res) => {
     })
 });
 
-app.put(`/posts/:id/downvote`, (req, res) => {
+app.put(`/blogs/:id/downvote`, (req, res) => {
     let id = req.params.id
-    conn.query(`update posts set score = posts.score - 1 where id = ?;`, [id], (err, update) => {
+    conn.query(`update blogs set score = posts.score - 1 where id = ?;`, [id], (err, update) => {
         if (err) {
             res.status(500)
         }
         else {
-            conn.query(`Select * from posts where id = ?`, [id], (err, postback) => {
+            conn.query(`Select * from blogs where id = ?`, [id], (err, postback) => {
                 if (err) {
                     res.status(500)
                 }
